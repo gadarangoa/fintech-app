@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{plataforma.titulo-principal}">Fintech App</title>
+    <link rel="stylesheet" th:href="@{/estilos.css}">
+</head>
+<body>
+
+    <div class="contenedor-principal">
+        
+        <!-- HEADER PRINCIPAL -->
+        <div class="header-fintech">
+            <h1 th:text="#{plataforma.titulo-principal}">Título</h1>
+            <p th:text="#{plataforma.subtitulo-principal}">Subtítulo</p>
+        </div>
+
+        <!-- REQUERIMIENTO 1: SECCIÓN BUSCAR SUPERIOR -->
+        <div class="tarjeta-modulo">
+            <div class="titulo-modulo" th:text="#{seccion.busqueda.titulo}">Consulta</div>
+            <form th:action="@{/creditos/buscar-solicitud}" method="post" class="barra-busqueda">
+                <button type="submit" class="btn-ui btn-negro" th:text="#{boton.buscar}">BUSCAR</button>
+                <input type="text" name="txtCedulaBuscar" class="input-busqueda" th:placeholder="#{seccion.busqueda.placeholder}" required>
+            </form>
+        </div>
+
+        <!-- REQUERIMIENTO 2: CAJA DINÁMICA CONDICIONAL DE RESULTADO DE BÚSQUEDA -->
+        <div th:if="${resultadoBusqueda != null}" class="tarjeta-modulo">
+            <div class="titulo-modulo" th:text="#{seccion.resultado.titulo}">Contenido</div>
+            <div class="caja-resultado-busqueda">
+                <div class="grid-resultado">
+                    <div><strong>Cédula:</strong> <span th:text="${resultadoBusqueda.cedula}">-</span></div>
+                    <div><strong>Nombre Completo:</strong> <span th:text="${resultadoBusqueda.nombrecliente}">-</span></div>
+                    <div><strong>Ciudad:</strong> <span th:text="${resultadoBusqueda.ciudad}">-</span></div>
+                    <div><strong>Correo Electrónico:</strong> <span th:text="${resultadoBusqueda.correo}">-</span></div>
+                    <div><strong>Monto Solicitado:</strong> <span style="color: #16a34a; font-weight: bold;" th:text="'$' + ${resultadoBusqueda.montosolicitado}">-</span></div>
+                    <div><strong>Estado Evaluación:</strong> 
+                        <span th:if="${resultadoBusqueda.aprobado}" style="color: #16a34a; font-weight: bold;">🟢 APROBADO</span>
+                        <span th:if="${!resultadoBusqueda.aprobado}" style="color: #dc2626; font-weight: bold;">🔴 RECHAZADO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REQUERIMIENTO 3 ENLAZADO: BOTONERA DE OPERACIONES MULTI-PANTALLA -->
+        <div class="tarjeta-modulo">
+            <div class="titulo-modulo" th:text="#{seccion.operaciones.titulo}">Operaciones</div>
+            <div class="contenedor-botones">
+                
+                <!-- BOTÓN 1: LIMPIAR CAMPOS -->
+                <button type="button" onclick="document.getElementById('operacion').value='crear'; document.getElementById('formCedula').readOnly=false; document.getElementById('formCedula').style.backgroundColor='#f9fafb'; document.getElementById('formCedula').value=''; document.getElementById('formNombre').value=''; document.getElementById('formCorreo').value=''; document.getElementById('formCiudad').value=''; document.getElementById('formMonto').value=''; document.getElementById('formPlazo').value=''; document.getElementById('formTasa').value=''; document.getElementById('formIngresos').value=''; document.getElementById('formScore').value=''; document.getElementById('chkAprobado').checked=false; alert('✨ Formulario vaciado de forma exitosa. Los campos están listos para ingresar una nueva solicitud.')" class="btn-ui btn-azul" th:text="#{boton.crear}">LIMPIAR CAMPOS</button>
+                
+                <!-- BOTÓN 2 NUEVO: REDIRECCIONA DIRECTAMENTE A LA NUEVA VISTA DE LA TABLA -->
+                <a th:href="@{/creditos/ver-tabla}" class="btn-ui btn-amarillo" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.4;" th:text="#{boton.actualizar}">📊 TABLA DE DATOS</a>
+
+                <!-- BOTÓN 3: EXPLORADOR DE ARCHIVOS CSV -->
+                <form th:action="@{/creditos/cargar-csv}" method="post" enctype="multipart/form-data" style="margin:0; display:inline-block;">
+                    <input type="file" name="archivoCsv" id="exploradorArchivos" accept=".csv" style="display: none;" onchange="if(this.value) { this.form.submit(); }">
+                    <button type="button" onclick="document.getElementById('exploradorArchivos').click();" class="btn-ui btn-verde" th:text="#{boton.cargar-archivo}">CARGAR ARCHIVO</button>
+                </form>
+                
+            </div>
+        </div>
+
+        <!-- REQUERIMIENTO 4: FORMULARIO INFERIOR EXPANDIDO -->
+        <div class="tarjeta-modulo">
+            <div class="titulo-modulo" th:text="#{seccion.formulario.titulo}">Formulario</div>
+            <form th:action="@{/creditos/guardar}" method="post">
+                <input type="hidden" name="operacion" id="operacion" value="crear">
+                <div class="grid-formulario">
+                    <div class="grupo-campo">
+                        <label>Cédula de Identidad (Llave Primaria Protegida):</label>
+                        <input type="text" name="cedula" id="formCedula" class="input-formulario" required 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.cedula} : ''"
+                               th:readonly="${resultadoBusqueda != null}"
+                               th:style="${resultadoBusqueda != null} ? 'background-color: #e5e7eb; border-color: #9ca3af; font-weight: bold; color: #4b5563;' : 'background-color: #f9fafb;'"
+                               placeholder="Ej: 1012345678">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Nombre Completo del Cliente (*):</label>
+                        <input type="text" name="nombrecliente" id="formNombre" class="input-formulario" required 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.nombrecliente} : ''" placeholder="Ej: Ana Maria Gómez">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Correo Electrónico de Notificación (*):</label>
+                        <input type="email" name="correo" id="formCorreo" class="input-formulario" required 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.correo} : ''" placeholder="Ej: maria.gomez@mail.com">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Ciudad de Residencia (*):</label>
+                        <input type="text" name="ciudad" id="formCiudad" class="input-formulario" required 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.ciudad} : ''" placeholder="Ej: Bogotá">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Monto del Crédito Solicitado en Pesos (*):</label>
+                        <input type="number" name="montosolicitado" id="formMonto" class="input-formulario" required 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.montosolicitado} : ''" placeholder="Ej: 8500000">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Plazo Amortización (Meses) (*):</label>
+                        <input type="number" name="plazomeses" id="formPlazo" class="input-formulario" required 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.plazomeses} : ''" placeholder="Ej: 24">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Tasa de Interés Aplicada (%):</label>
+                        <input type="number" step="0.01" name="tasainteres" id="formTasa" class="input-formulario" 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.tasainteres} : ''" placeholder="Ej: 1.85">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Ingresos Mensuales Demostrados:</label>
+                        <input type="number" name="ingresosmensuales" id="formIngresos" class="input-formulario" 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.ingresosmensuales} : ''" placeholder="Ej: 4200000">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Score Crediticio (0 - 1000):</label>
+                        <input type="number" name="scorecrediticio" id="formScore" class="input-formulario" 
+                               th:value="${resultadoBusqueda != null} ? ${resultadoBusqueda.scorecrediticio} : ''" placeholder="Ej: 720">
+                    </div>
+                    <div class="grupo-campo check-container">
+                        <input type="checkbox" name="aprobado" value="true" id="chkAprobado"
+                               th:checked="${resultadoBusqueda != null} ? ${resultadoBusqueda.aprobado} : false">
+                        <label for="chkAprobado">¿Aprobar solicitud de manera inmediata?</label>
+                    </div>
+                    <div class="grupo-campo full-width">
+                        <button type="submit" class="btn-ui btn-enviar-master" th:text="#{boton.enviar-formulario}">Enviar Operación</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>

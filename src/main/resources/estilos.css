@@ -1,0 +1,79 @@
+/* Estilo del fondo principal de la aplicación */
+.root {
+    -fx-background-color: #f4f6f9;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Título superior de la Fintech */
+.titulo-barra {
+    -fx-background-color: #2980b9;
+    -fx-alignment: center;
+    -fx-padding: 15px;
+}
+.titulo-texto {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Contenedores de formularios (Paneles laterales) */
+.panel-formulario {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dcdde1;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+}
+
+/* Campos de texto e inputs */
+.text-field {
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-border-color: #bdc3c7;
+    -fx-background-color: #ffffff;
+    -fx-padding: 6px;
+}
+.text-field:focused {
+    -fx-border-color: #2980b9;
+    -fx-border-width: 1.5px;
+}
+
+/* Estilo general para todos los botones */
+.button {
+    -fx-background-color: #34495e;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 15px;
+    -fx-cursor: hand;
+}
+.button:hover {
+    -fx-background-color: #2c3e50;
+}
+
+/* Botones con estilos específicos usando ID o clases secundarias */
+.button-cargar {
+    -fx-background-color: #27ae60;
+}
+.button-cargar:hover {
+    -fx-background-color: #219653;
+}
+
+.button-eliminar {
+    -fx-background-color: #c0392b;
+}
+.button-eliminar:hover {
+    -fx-background-color: #a93226;
+}
+
+/* Estilos de la tabla de datos */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #dcdde1;
+    -fx-border-radius: 5px;
+}
+.table-view .column-header {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+}

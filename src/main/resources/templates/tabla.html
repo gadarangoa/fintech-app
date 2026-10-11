@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{seccion.tabla.titulo}">Historial de Solicitudes</title>
+    <link rel="stylesheet" th:href="@{/estilos.css}">
+    <style>
+        .tabla-fintech {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .tabla-fintech th {
+            background-color: #1f2937;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .tabla-fintech td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+        }
+        .tabla-fintech tr:hover { background-color: #f9fafb; }
+        .badge-ui {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-verde { background-color: #d1fae5; color: #065f46; }
+        .badge-rojo { background-color: #fee2e2; color: #991b1b; }
+        .btn-tabla-rojo {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-tabla-rojo:hover { background-color: #dc2626; }
+        .btn-navegacion {
+            display: inline-block;
+            background-color: #4b5563;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 20px;
+            transition: background-color 0.2s;
+        }
+        .btn-navegacion:hover { background-color: #374151; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-principal">
+        
+        <!-- HEADER PRINCIPAL -->
+        <div class="header-fintech">
+            <h1 th:text="#{plataforma.titulo-principal}">Título Principal</h1>
+            <p th:text="#{tabla.header.subtitulo}">Subtítulo de la Tabla</p>
+        </div>
+
+        <!-- BOTÓN DE RETORNO CON TEXTO ASOCIADO AL PROPERTIES -->
+        <!-- BLINDADO CON RUTA ABSOLUTA PLANA: Salta directamente al controlador de inicio limpiando subcarpetas -->
+        <a href="/creditos" class="btn-navegacion" th:text="#{tabla.boton.volver}">⬅️ VOLVER AL FORMULARIO</a>
+        
+
+        <!-- TARJETA DEL HISTORIAL EXCLUSIVO -->
+        <div class="tarjeta-modulo">
+            <div class="titulo-modulo" th:text="#{seccion.tabla.titulo}">Historial de Solicitudes</div>
+            
+            <!-- Campo oculto blindado para cargar la alerta sin romper sintaxis XML -->
+            <input type="hidden" id="msgAlertaBorrado" th:value="#{alerta.confirmar-borrado}">
+            
+            <div style="overflow-x: auto;">
+                <table class="tabla-fintech">
+                    <thead>
+                        <tr>
+                            <th th:text="#{tabla.columna.cedula}">Cédula</th>
+                            <th th:text="#{tabla.columna.nombre}">Nombre Completo</th>
+                            <th th:text="#{tabla.columna.ciudad}">Ciudad</th>
+                            <th th:text="#{tabla.columna.correo}">Correo Electrónico</th>
+                            <th th:text="#{tabla.columna.monto}">Monto Solicitado</th>
+                            <th th:text="#{tabla.columna.estado}">Estado Solicitud</th>
+                            <th style="text-align: center;" th:text="#{tabla.columna.acciones}">Acciones Críticas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="solicitud : ${solicitudes}">
+                            <td style="font-weight: bold;" th:text="${solicitud.cedula}">-</td>
+                            <td th:text="${solicitud.nombrecliente}">-</td>
+                            <td th:text="${solicitud.ciudad}">-</td>
+                            <td th:text="${solicitud.correo}">-</td>
+                            <td style="color: #16a34a; font-weight: bold;" th:text="'$' + ${solicitud.montosolicitado}">-</td>
+                            <td>
+                                <span th:if="${solicitud.aprobado}" class="badge-ui badge-verde">🟢 APROBADO</span>
+                                <span th:if="${!solicitud.aprobado}" class="badge-ui badge-rojo">🔴 RECHAZADO</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <button type="button" 
+                                        th:attr="onclick='confirmarYBorrar(\'' + ${solicitud.cedula} + '\')'"
+                                        class="btn-tabla-rojo" 
+                                        th:text="#{boton.tabla-eliminar}">❌ Eliminar</button>
+                            </td>
+                        </tr>
+                        <!-- Celda de respaldo si el historial está vacío -->
+                        <tr th:if="${#lists.isEmpty(solicitudes)}">
+                            <td colspan="7" style="text-align: center; color: #9ca3af; padding: 25px;" th:text="#{tabla.vacio}">No hay registros.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmarYBorrar(cedula) {
+            var mensaje = document.getElementById('msgAlertaBorrado').value;
+            if (confirm(mensaje)) {
+                window.location.href = '/creditos/eliminar/' + cedula;
+            }
+        }
+    </script>
+
+</body>
+</html>

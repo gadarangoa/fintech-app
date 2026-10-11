@@ -1,0 +1,11 @@
+cedula,nombreCliente,correo,ciudad,montoSolicitado,plazoMeses,tasaInteres,ingresosMensuales,scoreCrediticio,aprobado
+1078123401,Valentina Gómez Ruiz,vgomez@fintechmail.com,Bogotá,8500000,24,1.85,4200000,720,true
+1078123402,Andrés Ramírez Peña,aramirez@fintechmail.com,Medellín,15000000,36,1.95,6500000,680,true
+1078123403,Laura Martínez Ochoa,lmartinez@fintechmail.com,Cali,3200000,12,2.10,2100000,540,false
+1078123404,Santiago López Duarte,slopez@fintechmail.com,Barranquilla,22000000,48,1.75,9800000,810,true
+1078123405,Daniela Hernández Mora,dhernandez@fintechmail.com,Bucaramanga,6000000,18,2.05,3000000,610,false
+1078123406,Felipe Castro Niño,fcastro@fintechmail.com,Pereira,12000000,36,1.90,5400000,700,true
+1078123407,Mariana Rojas Téllez,mrojas@fintechmail.com,Cartagena,4500000,24,2.20,2500000,495,false
+1078123408,Juan Vargas Quintero,jvargas@fintechmail.com,Manizales,18000000,60,1.80,7600000,765,true
+1078123409,Isabella Moreno Salas,imoreno@fintechmail.com,Ibagué,9500000,30,1.98,4800000,655,true
+1078123410,Sebastián Díaz Acosta,sdiaz@fintechmail.com,Villavicencio,7000000,24,2.15,3300000,580,false

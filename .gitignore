@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------
+# Credenciales de Firebase: NUNCA se versionan (dan acceso de
+# administrador al proyecto de Google Cloud)
+# ---------------------------------------------------------------
+firebase-key.json
+**/firebase-key.json
+*serviceAccount*.json
+*-firebase-adminsdk-*.json
+
+# Compilación Maven
+target/
+
+# Pruebas end-to-end (Playwright)
+e2e/node_modules/
+e2e/test-results/
+e2e/reporte-html/
+e2e/playwright-report/
+
+# IDE / sistema operativo
+.idea/
+*.iml
+.vscode/
+.DS_Store

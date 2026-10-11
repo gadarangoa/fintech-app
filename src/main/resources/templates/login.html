@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fintech Live Cloud - Autenticación</title>
+    <link rel="stylesheet" th:href="@{/estilos.css}">
+    <style>
+        .contenedor-login {
+            width: 100%;
+            max-width: 400px;
+            margin: 100px auto 0 auto;
+        }
+        .btn-login {
+            background-color: #1f2937;
+            color: white;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 15px;
+        }
+        .alerta-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-principal contenedor-login">
+        
+        <!-- HEADER LOGIN -->
+        <div class="header-fintech">
+            <h1>FINTECH CORE</h1>
+            <p>AUTENTICACIÓN DE ANALISTA BANCARIO</p>
+        </div>
+
+        <div class="tarjeta-modulo">
+            <div class="titulo-modulo">🔑 Ingreso Seguro al Sistema</div>
+            
+            <!-- Mensaje condicional si el login falla -->
+            <div th:if="${param.error}" class="alerta-error">
+                ⚠️ Usuario o Contraseña incorrectos en la nube.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="grid-formulario" style="grid-template-columns: 1fr; gap: 15px;">
+                    <div class="grupo-campo">
+                        <label>Usuario Analista (ID Firestore):</label>
+                        <input type="text" name="username" class="input-formulario" required placeholder="Digite su identificación...">
+                    </div>
+                    <div class="grupo-campo">
+                        <label>Contraseña Cloud:</label>
+                        <input type="password" name="password" class="input-formulario" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn-login">INGRESAR AL SISTEMA</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>
