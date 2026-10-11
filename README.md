@@ -1,5 +1,9 @@
 # FirebaseCSVManager · Sistema de Solicitudes de Crédito
 
+[![CI y GitHub Pages](https://github.com/gadarangoa/fintech-app/actions/workflows/ci-pages.yml/badge.svg)](https://github.com/gadarangoa/fintech-app/actions/workflows/ci-pages.yml)
+
+Sitio del proyecto: https://gadarangoa.github.io/fintech-app/
+
 Aplicación web en **Java (Spring Boot + Thymeleaf)** conectada de forma híbrida a una base de datos NoSQL en la nube
 (**Google Cloud Firestore**). Permite a un analista autenticado cargar solicitudes de crédito de forma masiva desde un
 archivo **CSV** y administrarlas con las cuatro operaciones básicas: **inserción, consulta, edición y eliminación**.
@@ -168,6 +172,24 @@ Las credenciales se pasan por variables de entorno para no escribirlas en el có
 El archivo [`.mcp.json`](.mcp.json) configura el servidor **Playwright MCP**, para que un asistente de IA compatible
 (por ejemplo Claude Code) pueda controlar el navegador y explorar la aplicación.
 
+## Integración continua y GitHub Pages
+
+El flujo [`.github/workflows/ci-pages.yml`](.github/workflows/ci-pages.yml) se ejecuta en cada push a `main`:
+
+1. **Compilar:** `./mvnw -B clean package` con JDK 21 y publica el `.jar` como artefacto.
+2. **Pruebas E2E:** levanta la aplicación contra Firestore y ejecuta Playwright. Solo corre si el repositorio tiene
+   estos secretos (*Settings → Secrets and variables → Actions*):
+   - `FIREBASE_KEY_JSON`: contenido completo del archivo de la llave de la cuenta de servicio.
+   - `APP_USER` y `APP_PASSWORD`: un analista registrado en la colección `analistas`.
+   Si faltan, el paso se omite con un aviso y el resto del flujo continúa. No se ejecuta en *pull requests*
+   porque escribe en la base de datos real.
+3. **Publicar:** sube a GitHub Pages la carpeta [`docs/`](docs) con la descripción del proyecto, las evidencias y el
+   reporte HTML de Playwright de la última ejecución.
+
+GitHub Pages solo sirve archivos estáticos, por lo que la aplicación Spring Boot no se ejecuta allí: el sitio documenta
+el proyecto y muestra los resultados de las pruebas. Para habilitarlo, en *Settings → Pages* elija
+**Source: GitHub Actions**.
+
 ## Estructura del proyecto
 
 ```
@@ -177,6 +199,8 @@ fintech-app/
 ├── firebase-key.json               Llave de la cuenta de servicio (NO versionada)
 ├── datos/solicitudes_credito.csv   CSV de ejemplo
 ├── e2e/                            Pruebas Playwright y capturas de evidencia
+├── docs/                           Sitio publicado en GitHub Pages
+├── .github/workflows/              Integración continua y publicación
 └── src/main/
     ├── java/com/proyecto/
     │   ├── main/                   FintechWebApplication, SecurityConfig

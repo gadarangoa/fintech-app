@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FirebaseCSVManager</title>
+<meta name="description" content="Aplicación Java (Spring Boot) conectada de forma híbrida a Google Cloud Firestore: carga de CSV y CRUD de solicitudes de crédito.">
+<style>
+  :root {
+    --bg: #f7f8fa; --panel: #ffffff; --text: #1f2933; --muted: #5b6875; --line: #dde2e8;
+    --accent: #0b6bcb; --accent-soft: #e6f0fb; --ok: #1a7f37; --code: #f0f2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111418; --panel: #1a1f25; --text: #e6e9ed; --muted: #9aa5b1; --line: #2d343c;
+      --accent: #5aa6f0; --accent-soft: #1d2b3a; --ok: #4ac26b; --code: #22282f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 40px 0 32px; }
+  h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 38px); line-height: 1.2; }
+  .lead { margin: 0; color: var(--muted); max-width: 760px; }
+  .meta { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .acciones { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn { display: inline-block; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--accent); color: var(--accent); text-decoration: none; font-weight: 600; font-size: 15px; }
+  .btn.primario { background: var(--accent); color: #fff; }
+  section { padding: 36px 0 8px; }
+  h2 { font-size: 22px; margin: 0 0 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+  figure { margin: 0; }
+  .arq { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .arq img { width: 100%; height: auto; display: block; }
+  figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--code); }
+  .tabla { overflow-x: auto; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 13.5px; line-height: 1.5; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .estado { border-left: 4px solid var(--ok); background: var(--panel); padding: 12px 14px; border-radius: 6px; margin-bottom: 16px; }
+  .galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .galeria a { display: block; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text); }
+  .galeria img { width: 100%; height: 150px; object-fit: cover; object-position: top; display: block; background: #fff; }
+  .galeria span { display: block; padding: 8px 10px; font-size: 13px; }
+  footer { color: var(--muted); font-size: 13px; padding: 36px 0 48px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>FirebaseCSVManager</h1>
+    <p class="lead">Sistema web de solicitudes de crédito en Java con Spring Boot, conectado de forma híbrida a una base de datos NoSQL en Google Cloud Firestore. Carga registros desde un archivo CSV y permite consultarlos, editarlos, crearlos y eliminarlos desde una interfaz gráfica con acceso restringido.</p>
+    <div class="meta">
+      <span class="chip">Java</span><span class="chip">Spring Boot 2.7</span><span class="chip">Thymeleaf</span>
+      <span class="chip">Cloud Firestore</span><span class="chip">Firebase Admin SDK</span><span class="chip">Playwright</span>
+    </div>
+    <div class="acciones">
+      <a class="btn primario" href="https://github.com/gadarangoa/fintech-app">Código fuente</a>
+      <a class="btn" href="https://github.com/gadarangoa/fintech-app#readme">Instrucciones (README)</a>
+      <a class="btn" href="reporte/index.html">Reporte de pruebas</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section>
+    <h2>Funcionalidades</h2>
+    <div class="grid">
+      <div class="card"><h3>Carga masiva desde CSV</h3><p>Lee el archivo con OpenCSV, valida y convierte cada columna, e inserta los registros en la colección <code>solicitudes_credito</code>.</p></div>
+      <div class="card"><h3>Consulta por cédula</h3><p>Busca la solicitud en Firestore y precarga el formulario con la cédula bloqueada.</p></div>
+      <div class="card"><h3>Edición y creación</h3><p>Actualiza o registra solicitudes desde el formulario de captura.</p></div>
+      <div class="card"><h3>Eliminación con confirmación</h3><p>Borra registros desde la tabla de datos tras una alerta de confirmación.</p></div>
+      <div class="card"><h3>Acceso seguro</h3><p>Spring Security valida a los analistas contra la colección <code>analistas</code>.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Arquitectura</h2>
+    <figure class="arq">
+      <img src="img/arquitectura.png" alt="La aplicación Spring Boot se ejecuta en el equipo del analista y se comunica por Internet con Cloud Firestore mediante el Firebase Admin SDK.">
+    </figure>
+    <figcaption>La aplicación corre en el equipo local (Tomcat embebido, puerto 8085) y persiste los datos en Cloud Firestore, un servicio PaaS de Google Cloud.</figcaption>
+  </section>
+
+  <section>
+    <h2>Ejecución local</h2>
+    <p>La aplicación necesita una llave de cuenta de servicio de Firebase (<code>firebase-key.json</code>) en la raíz del proyecto. Por eso no se publica en este sitio: GitHub Pages solo sirve contenido estático.</p>
+<pre><code>git clone https://github.com/gadarangoa/fintech-app.git
+cd fintech-app
+cp ~/Downloads/&lt;llave-descargada&gt;.json firebase-key.json
+./mvnw clean package
+java -jar target/FintechWebMVC-0.0.1-SNAPSHOT.jar
+# Abrir http://localhost:8085</code></pre>
+  </section>
+
+  <section>
+    <h2>Pruebas automatizadas</h2>
+    <div class="estado"><strong>Estado de las pruebas E2E:</strong> {{ESTADO_E2E}}</div>
+    <div class="tabla">
+    <table>
+      <thead><tr><th>ID</th><th>Caso de prueba</th><th>Resultado esperado</th></tr></thead>
+      <tbody>
+        <tr><td>CP-01</td><td>Acceder a /creditos sin sesión</td><td>Redirección a /login</td></tr>
+        <tr><td>CP-02</td><td>Iniciar sesión con contraseña incorrecta</td><td>Mensaje de error</td></tr>
+        <tr><td>CP-03</td><td>Iniciar sesión con un analista registrado</td><td>Acceso al panel principal</td></tr>
+        <tr><td>CP-04</td><td>Cargar datos/solicitudes_credito.csv</td><td>Los 10 registros aparecen en la tabla</td></tr>
+        <tr><td>CP-05</td><td>Buscar la cédula 1078123403</td><td>Datos de la solicitud y cédula bloqueada</td></tr>
+        <tr><td>CP-06</td><td>Buscar una cédula inexistente</td><td>Sin resultados</td></tr>
+        <tr><td>CP-07</td><td>Editar monto y aprobación</td><td>Monto $4000000 y estado APROBADO</td></tr>
+        <tr><td>CP-08</td><td>Crear la solicitud 1078123499</td><td>La solicitud aparece en la tabla</td></tr>
+        <tr><td>CP-09</td><td>Eliminar la solicitud 1078123499</td><td>Confirmación y registro eliminado</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Evidencias</h2>
+    <div class="galeria">
+      <a href="evidencias/01-login.png"><img src="evidencias/01-login.png" alt="" loading="lazy"><span>CP-01 · Inicio de sesión</span></a>
+      <a href="evidencias/02-login-rechazado.png"><img src="evidencias/02-login-rechazado.png" alt="" loading="lazy"><span>CP-02 · Credenciales rechazadas</span></a>
+      <a href="evidencias/03-panel-principal.png"><img src="evidencias/03-panel-principal.png" alt="" loading="lazy"><span>CP-03 · Panel principal</span></a>
+      <a href="evidencias/04-tabla-despues-de-cargar-csv.png"><img src="evidencias/04-tabla-despues-de-cargar-csv.png" alt="" loading="lazy"><span>CP-04 · Tabla tras cargar el CSV</span></a>
+      <a href="evidencias/05-consulta-por-cedula.png"><img src="evidencias/05-consulta-por-cedula.png" alt="" loading="lazy"><span>CP-05 · Consulta por cédula</span></a>
+      <a href="evidencias/06-consulta-sin-resultados.png"><img src="evidencias/06-consulta-sin-resultados.png" alt="" loading="lazy"><span>CP-06 · Cédula inexistente</span></a>
+      <a href="evidencias/07-edicion-formulario-modificado.png"><img src="evidencias/07-edicion-formulario-modificado.png" alt="" loading="lazy"><span>CP-07 · Formulario de edición</span></a>
+      <a href="evidencias/08-edicion-resultado.png"><img src="evidencias/08-edicion-resultado.png" alt="" loading="lazy"><span>CP-07 · Resultado de la edición</span></a>
+      <a href="evidencias/09-creacion-formulario.png"><img src="evidencias/09-creacion-formulario.png" alt="" loading="lazy"><span>CP-08 · Formulario de creación</span></a>
+      <a href="evidencias/10-creacion-en-tabla.png"><img src="evidencias/10-creacion-en-tabla.png" alt="" loading="lazy"><span>CP-08 · Nueva solicitud en la tabla</span></a>
+      <a href="evidencias/11-eliminacion-resultado.png"><img src="evidencias/11-eliminacion-resultado.png" alt="" loading="lazy"><span>CP-09 · Tabla tras eliminar</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  Gustavo Arango Angulo y Harold Glasser Urueña · Fundamentos de la Tecnología Cloud, Maestría en Arquitectura de Software, Institución Universitaria Politécnico Grancolombiano · Versión {{COMMIT}}
+</footer>
+</body>
+</html>

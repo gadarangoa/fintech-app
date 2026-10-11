@@ -1,0 +1,147 @@
+# Integración continua y publicación del sitio del proyecto en GitHub Pages.
+#
+# 1. build: compila y empaqueta la aplicación con el Maven Wrapper.
+# 2. e2e:   levanta la aplicación contra Cloud Firestore y ejecuta las pruebas de Playwright.
+#           Solo corre si están configurados los secretos FIREBASE_KEY_JSON, APP_USER y APP_PASSWORD.
+# 3. pages: publica la carpeta docs/ junto con las evidencias y el reporte de Playwright.
+name: CI y GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Compilar con Maven
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Compilar y empaquetar
+        run: ./mvnw -B clean package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aplicacion-jar
+          path: target/FintechWebMVC-0.0.1-SNAPSHOT.jar
+
+  e2e:
+    name: Pruebas E2E (Playwright + Firestore)
+    needs: build
+    # Las pruebas escriben en la base de datos real, por eso no se ejecutan en pull requests
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_KEY_JSON: ${{ secrets.FIREBASE_KEY_JSON }}
+      APP_USER: ${{ secrets.APP_USER }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+    steps:
+      - name: Verificar secretos
+        id: secretos
+        run: |
+          if [ -n "$FIREBASE_KEY_JSON" ] && [ -n "$APP_USER" ] && [ -n "$APP_PASSWORD" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Pruebas E2E omitidas: configure los secretos FIREBASE_KEY_JSON, APP_USER y APP_PASSWORD."
+          fi
+      - uses: actions/checkout@v4
+        if: steps.secretos.outputs.ok == 'true'
+      - uses: actions/setup-java@v4
+        if: steps.secretos.outputs.ok == 'true'
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        if: steps.secretos.outputs.ok == 'true'
+        with:
+          name: aplicacion-jar
+          path: target
+      - name: Levantar la aplicación
+        if: steps.secretos.outputs.ok == 'true'
+        run: |
+          printf '%s' "$FIREBASE_KEY_JSON" > firebase-key.json
+          nohup java -jar target/FintechWebMVC-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -s -o /dev/null http://localhost:8085/login; then echo "Aplicación lista"; exit 0; fi
+            sleep 2
+          done
+          cat app.log; exit 1
+      - uses: actions/setup-node@v4
+        if: steps.secretos.outputs.ok == 'true'
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: Ejecutar pruebas
+        if: steps.secretos.outputs.ok == 'true'
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+      - name: Borrar la llave del runner
+        if: always()
+        run: rm -f firebase-key.json
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.secretos.outputs.ok == 'true'
+        with:
+          name: resultados-e2e
+          path: |
+            e2e/reporte-html
+            e2e/evidencias
+            app.log
+
+  pages:
+    name: Publicar en GitHub Pages
+    needs: [build, e2e]
+    if: always() && needs.build.result == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        if: needs.e2e.result == 'success'
+        continue-on-error: true
+        with:
+          name: resultados-e2e
+          path: resultados
+      - name: Armar el sitio
+        run: |
+          mkdir -p sitio
+          cp -r docs/. sitio/
+          # Evidencias: las de la última ejecución en CI si existen; si no, las del repositorio
+          if [ -d resultados/e2e/evidencias ]; then cp -r resultados/e2e/evidencias sitio/evidencias; else cp -r e2e/evidencias sitio/evidencias; fi
+          if [ -d resultados/e2e/reporte-html ]; then
+            cp -r resultados/e2e/reporte-html sitio/reporte
+            ESTADO="Ejecutadas en GitHub Actions el $(date -u '+%Y-%m-%d %H:%M UTC') (ejecución #${{ github.run_number }})."
+          else
+            mkdir -p sitio/reporte
+            printf '%s\n' '<!doctype html><meta charset="utf-8"><title>Reporte no disponible</title><p style="font-family:sans-serif">Las pruebas E2E no se ejecutaron en esta publicación. Configure los secretos del repositorio para generarlo.</p><p><a href="../">Volver</a></p>' > sitio/reporte/index.html
+            ESTADO="No ejecutadas en esta publicación (faltan los secretos del repositorio). Se muestran las evidencias guardadas en el repositorio."
+          fi
+          sed -i "s|{{ESTADO_E2E}}|$ESTADO|; s|{{COMMIT}}|${GITHUB_SHA::7}|" sitio/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sitio
+      - id: deploy
+        uses: actions/deploy-pages@v4
