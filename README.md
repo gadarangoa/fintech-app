@@ -103,8 +103,8 @@ Navegador ──HTTP──▶ Spring Boot :8085 ──────────�
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/gadarangoa/FirebaseCSVManager.git
-cd FirebaseCSVManager
+git clone https://github.com/gadarangoa/fintech-app.git
+cd fintech-app
 
 # 2. Copiar la llave de Firebase a la raíz del proyecto
 cp ~/Downloads/<archivo-descargado>.json firebase-key.json
@@ -171,7 +171,7 @@ El archivo [`.mcp.json`](.mcp.json) configura el servidor **Playwright MCP**, pa
 ## Estructura del proyecto
 
 ```
-FirebaseCSVManager/
+fintech-app/
 ├── pom.xml                         Dependencias Maven (Spring Boot, Firebase Admin, OpenCSV)
 ├── mvnw, mvnw.cmd, .mvn/           Maven Wrapper
 ├── firebase-key.json               Llave de la cuenta de servicio (NO versionada)
