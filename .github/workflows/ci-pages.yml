@@ -51,11 +51,15 @@ jobs:
       - name: Verificar secretos
         id: secretos
         run: |
-          if [ -n "$FIREBASE_KEY_JSON" ] && [ -n "$APP_USER" ] && [ -n "$APP_PASSWORD" ]; then
+          faltan=""
+          [ -n "$FIREBASE_KEY_JSON" ] || faltan="$faltan FIREBASE_KEY_JSON"
+          [ -n "$APP_USER" ] || faltan="$faltan APP_USER"
+          [ -n "$APP_PASSWORD" ] || faltan="$faltan APP_PASSWORD"
+          if [ -z "$faltan" ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
           else
             echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Pruebas E2E omitidas: configure los secretos FIREBASE_KEY_JSON, APP_USER y APP_PASSWORD."
+            echo "::warning::Pruebas E2E omitidas. Secretos de repositorio (Actions) no encontrados:$faltan"
           fi
       - uses: actions/checkout@v4
         if: steps.secretos.outputs.ok == 'true'
